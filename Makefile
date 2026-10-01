@@ -3,7 +3,7 @@
 .PHONY: help setup reproduce test lint grade clean data
 
 VENV := .venv
-PY := $(VENV)/bin/python
+PY := $(VENV)/Scripts/python
 CONFIG ?= config.yaml
 OUTPUT_DIR ?=
 

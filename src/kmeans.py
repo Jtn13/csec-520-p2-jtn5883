@@ -113,23 +113,38 @@ class KMeansScratch:
         Use ``rng`` (a numpy Generator) for every random draw so runs are
         reproducible. ``self._sqdist`` gives you the distances you need.
 
-        TODO(student): implement this.
         """
-        raise NotImplementedError(
-            "Implement _init_centroids in src/kmeans.py (Project 2, Task 1)."
-        )
-
+        if self.init == "random":
+            return rng.choice(X,size=self.k,replace=False)
+        elif self.init == "kmeans++" or self.init == "k-means++":
+            centroids = np.empty((self.k,X.shape[1]))
+            centroids[0] = rng.choice(X)
+            for c in range(1, self.k):
+                dist = self._sqdist(X,centroids[:c])
+                D = dist.min(axis=1)
+                total = D.sum()
+                if total == 0:
+                    centroids[c] = rng.choice(X)
+                    continue
+                probs = D/total
+                centroids[c] = rng.choice(X,p=probs)
+            return centroids     
+        else:
+            raise ValueError (
+                "Unknown init value"
+            )
     def _assign(self, X: np.ndarray, centroids: np.ndarray) -> np.ndarray:
         """Assignment step: index of the nearest centroid for each point.
 
         Returns an int64 array of shape (n,) with values in [0, k).
 
-        TODO(student): implement this.
-          Hint: one call to ``self._sqdist`` plus an argmin along the right axis.
         """
-        raise NotImplementedError(
-            "Implement _assign in src/kmeans.py (Project 2, Task 1)."
-        )
+        dist = self._sqdist(X,centroids)
+        result = []
+        for row in dist:
+            result.append(np.argmin(row))
+        result = np.array(result, dtype=np.int64 )
+        return result
 
     def _update(self, X: np.ndarray, labels: np.ndarray, centroids: np.ndarray) -> np.ndarray:
         """Update step: move each centroid to the mean of its assigned points.
@@ -140,11 +155,14 @@ class KMeansScratch:
 
         Returns the new (k, d) centroids.
 
-        TODO(student): implement this.
         """
-        raise NotImplementedError(
-            "Implement _update in src/kmeans.py (Project 2, Task 1)."
-        )
+        newcentroids = np.copy(centroids)
+        for i in range(self.k):
+            mask = labels == i
+            points = X[mask]
+            if len(points) > 0:
+                newcentroids[i] = points.mean(axis=0)
+        return newcentroids
 
     # -- the fit loop you implement ----------------------------------------
     def fit(self, X: np.ndarray) -> "KMeansScratch":
@@ -164,14 +182,38 @@ class KMeansScratch:
             self.centroids_, self.labels_, self.inertia_, self.n_iter_
 
         Return ``self``.
-
-        TODO(student): implement this.
-          Seed your generator with ``np.random.default_rng(self.seed)`` once,
-          outside the restart loop, so all restarts are reproducible but distinct.
         """
-        raise NotImplementedError(
-            "Implement fit in src/kmeans.py (Project 2, Task 1)."
-        )
+        rng=np.random.default_rng(self.seed)
+        b_inertia = np.inf
+        b_centroids = None
+        b_labels = None
+        b_n_iter = 0
+        for run in range(self.n_init):
+            centroids=self._init_centroids(X,rng)
+            for i in range(self.max_iter):
+                labels = self._assign(X,centroids)
+                new_centroids = self._update(X,labels,centroids)
+                shift = np.sum((new_centroids-centroids)**2)
+                centroids = new_centroids
+                if shift < self.tol:
+                    break
+
+            n_iter = i + 1
+            labels = self._assign(X,centroids)
+            inertia = self._sqdist(X, centroids).min(axis=1).sum()
+
+            if inertia < b_inertia:
+                b_inertia = inertia
+                b_centroids = centroids
+                b_labels = labels
+                b_n_iter = n_iter
+        
+        self.centroids_ = b_centroids
+        self.labels_ = b_labels
+        self.inertia_ = float(b_inertia)
+        self.n_iter_ = b_n_iter
+        return self
+        
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Assign new points to the fitted centroids."""

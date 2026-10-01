@@ -52,6 +52,5 @@ def mahalanobis_sqdist(X: np.ndarray, C: np.ndarray, diag: np.ndarray) -> np.nda
       per-feature differences by `diag` before summing over d.
       Keep it vectorized — no Python loop over n.
     """
-    raise NotImplementedError(
-        "Implement mahalanobis_sqdist in src/distances.py (Project 2, Task 4)."
-    )
+    diff = X[:, None, :] - C[None, :, :]
+    return (diff**2*diag).sum(axis=2)
