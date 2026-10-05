@@ -3,7 +3,7 @@ seed: 42
 
 data:
   source: csv               # "iris" (default, no download) | "csv"
-  csv_path: data\UNSW_NB15_training-set.csv
+  csv_path: data/UNSW_NB15_training-set.csv
   target: attack_cat         # label column when source == csv
   drop_columns: [id, label]  # non-feature columns to drop from the CSV
   subsample: 4000            # cap rows (from-scratch K-means is O(n·k·d) per pass); null = all
