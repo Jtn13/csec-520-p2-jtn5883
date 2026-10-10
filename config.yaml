@@ -1,5 +1,5 @@
 # Experiment configuration — edit this, not the code, to change a run.
-seed: 42
+seed: 13
 
 data:
   source: csv               # "iris" (default, no download) | "csv"
@@ -11,18 +11,20 @@ data:
 
 kmeans:
   implementation: scratch    # "sklearn" = provided baseline | "scratch" = YOUR implementation
-  k: 11
+  k: 16
   init: kmeans++             # "kmeans++" | "random"
-  n_init: 10                 # random restarts; keep the lowest inertia
+  n_init: 25                 # random restarts; keep the lowest inertia
   max_iter: 300
   tol: 1.0e-4
   distance: euclidean        # "euclidean" | "mahalanobis"  (mahalanobis = scratch only)
-  mahalanobis_diag: null     # positive diagonal C, e.g. [2.0, 1.0, 0.5, 1.0]; null = all ones
-
+  mahalanobis_diag: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                   1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.1, 0.1, 1.0,
+                   1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                   1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 selection:                   # k-sweep for the elbow / silhouette figure
   silhouette_geometry: euclidean  # common space for k selection; or configured
   k_min: 2
-  k_max: 15
+  k_max: 20
 
 compare_to_reference: true   # when implementation=scratch, also run sklearn and report agreement
 
